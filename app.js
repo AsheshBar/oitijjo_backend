@@ -24,9 +24,33 @@ const port = process.env.PORT || 3000;
 
 // Create an express app
 const app = express();
-/*app.use(bodyParser.json());
 
-app.use(express.static(path.join(__dirname, 'uploads')));*/
+const caCert = `-----BEGIN CERTIFICATE-----
+MIIEQTCCAqmgAwIBAgIUXL1GUoSf3j9H3ZTuwNL9mr0AY4MwDQYJKoZIhvcNAQEM
+BQAwOjE4MDYGA1UEAwwvZTYwOTdmMTktMzJhNy00NTZmLWE4NWYtZGU5YWYzZThh
+YTVlIFByb2plY3QgQ0EwHhcNMjUwMTI3MTAxNDIxWhcNMzUwMTI1MTAxNDIxWjA6
+MTgwNgYDVQQDDC9lNjA5N2YxOS0zMmE3LTQ1NmYtYTg1Zi1kZTlhZjNlOGFhNWUg
+UHJvamVjdCBDQTCCAaIwDQYJKoZIhvcNAQEBBQADggGPADCCAYoCggGBALGIBVqy
+lP8y4EGTi2bBrtDg6vq2Jr3WO6M54MxCazvYTUGeEluLLQ+ehBo8H2UYcOPhYNQs
+oi8tNmMUiZo3+nXLF4oVa+jlw+8eIKyaNDBpfI+YhzA9fUd93QPTR64aSRs5u6X4
+JDeJfgMuFslsCekAT5+H8QzEXrBcggWMAqglxvLwFGvM3Z1cpSwd7lQUL8h53jNy
+r1LuGVV8W/8Yn9NA/mPTg6cwtgO4wm4hB+s4+Y9YdNzSdSRQQ0oyPzqGk74n9cR9
+G0pfec0Lu2d9hFlT98gpoVJDrfTA1Kle+m2OHLPKPEBrjoCQF5hspTwEYzQdXkCU
+CkNCfggupU2JW8u1rblW7BKi4iYvBSX2Dmrg/dOqZ+q45G7bu7j+MKjbA2hL3MnM
+o+0XUKYd3t4IgjdyVoWoHoj4q9mko5j3QiA22VpntSmuU+AnNc+P05IXCyRe7A6y
+VJOvJ3/2ggEtPItHZu/WA4vqaeC3S/A87cqDFb7zQTRmnQgD+dxpXt5wNwIDAQAB
+oz8wPTAdBgNVHQ4EFgQUf1GRv5HDY/AP0GAuvDEwAltwsjowDwYDVR0TBAgwBgEB
+/wIBADALBgNVHQ8EBAMCAQYwDQYJKoZIhvcNAQEMBQADggGBADnXdtZ0veMtKxz3
+ixwVh4afW3lHDGPSKut6KoIw6F9QJkHIOMCHpFuFCVy0OiyftViXJXF7rphG6cQN
+SQDrwEs6EXKO1J95+KDAR224af3DVyS/y4sM6glV1ThELOUPcMN0WR5RUIFVu9ER
+42ByBgZU/o8Mj7ME6eL2lFuBMeYDTl+mti2ymRvVbE7hDU5zEh909z284rlYgEdg
+vb/Tjl+RaN0fSMf065OKxqXisS0srEPHVCJGx4A9MA/iBsi06nDUsYUo5mj1MeKN
+/4HPvjzjloHUbUtMnxRWPM72qaBQBzaQPcBmL2hCX5J2T2fJbNewGcIFQsYQFGD4
+tM6AcNtXd6jNq6fb+pj7nB1c5ibkP8KWxtyg6OqKrF1bXjJJYEoxkUe7jwYMPCSd
+wAxiVM0SfE1oMBOdkPYycFYPnJzVyguZDooAv+a+q4yLNmnFsGWC0yvUDNdQgXOw
+tjEeDIgESgFn7gU4Wxdvur3bq+FPV+wvjSg+Vuj5fxOEu50c6A==
+-----END CERTIFICATE-----`;
+
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'uploads')));
 // Connect to MySQL
@@ -43,8 +67,8 @@ const db = mysql.createConnection({
   database: process.env.DB_NAME,
   port: process.env.DB_PORT,
   ssl: {
-    ca: fs.readFileSync('./ca-cert.pem'), // Path to the CA certificate file
-  }, // the name of your database
+    ca: caCert, // Path to the CA certificate file
+  },// the name of your database
 });
 
 
