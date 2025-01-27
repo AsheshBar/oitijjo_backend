@@ -7,6 +7,7 @@ const dotenv = require('dotenv'); // Import dotenv for environment variables
 const { createClient } = require('@supabase/supabase-js');
 //const mongoose = require("mongoose");
 const multer = require("multer");
+const fs = require('fs');
 //const GridFsStorage = require("multer-gridfs-storage");
 //const { GridFsStorage } = require("multer-gridfs-storage");
 //const { GridFSBucket } = require("mongodb");
@@ -39,7 +40,11 @@ const db = mysql.createConnection({
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME, // the name of your database
+  database: process.env.DB_NAME,
+  port: process.env.DB_PORT,
+  ssl: {
+    ca: fs.readFileSync('./ca-cert.pem'), // Path to the CA certificate file
+  }, // the name of your database
 });
 
 
@@ -52,7 +57,7 @@ db.connect(err => {
 
 // Listen on port 3000
 app.listen(3000, () => {
-  console.log('Server running on port 3000');
+  console.log('Server running on port ${PORT}');
 });
 
 // Supabase setup
