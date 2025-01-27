@@ -19,7 +19,7 @@ require('dotenv').config();
 
 //const mongoURI = "mongodb://localhost:27017/oitijjho_imgstore"; // Change to your MongoDB URI
 //const app = express();
-const port = process.env.PORT || 3000;
+const port = process.env.PORT;
 
 
 // Create an express app
