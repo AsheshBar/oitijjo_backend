@@ -68,7 +68,8 @@ const db = mysql.createConnection({
   port: process.env.DB_PORT,
   ssl: {
     ca: caCert, // Path to the CA certificate file
-  },// the name of your database
+  },
+  connectTimeout: 10000,// the name of your database
 });
 
 
