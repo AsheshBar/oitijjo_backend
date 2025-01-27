@@ -81,8 +81,8 @@ db.connect(err => {
 });
 
 // Listen on port 3000
-app.listen(3000, () => {
-  console.log('Server running on port ${PORT}');
+app.listen(port, () => {
+  console.log('Server running on port ${port}');
 });
 
 // Supabase setup
