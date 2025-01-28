@@ -57,28 +57,51 @@ app.use(express.static(path.join(__dirname, 'uploads')));
 
 //newly updated
 const db = mysql.createConnection({
-  /*host: 'localhost',
-  user: 'Turjo',   // replace with your MySQL username
-  password: 'Turjo_28',   // replace with your MySQL password
-  database: 'userdb'*/
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
   port: process.env.DB_PORT,
   ssl: {
-    ca: caCert, // Path to the CA certificate file
+    ca: caCert,
+    rejectUnauthorized: true
   },
-  connectTimeout: 10000,// the name of your database
+  connectTimeout: 60000, // Increase timeout to 60 seconds
+  acquireTimeout: 60000,
+  timeout: 60000,
 });
 
 
 
 // Connect to the database
-db.connect(err => {
+/*db.connect(err => {
   if (err) throw err;
   console.log('MySQL connected...');
+});*/
+function connectWithRetry() {
+  db.connect(err => {
+    if (err) {
+      console.error('Failed to connect to MySQL:', err);
+      console.log('Retrying in 5 seconds...');
+      setTimeout(connectWithRetry, 5000);
+    } else {
+      console.log('MySQL connected successfully');
+    }
+  });
+}
+
+// Handle connection errors
+db.on('error', (err) => {
+  console.error('MySQL connection error:', err);
+  if (err.code === 'PROTOCOL_CONNECTION_LOST') {
+    connectWithRetry();
+  } else {
+    throw err;
+  }
 });
+
+// Initial connection
+connectWithRetry();
 
 // Listen on port 3000
 app.listen(port, () => {
