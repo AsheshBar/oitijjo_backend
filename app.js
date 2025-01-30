@@ -2278,7 +2278,7 @@ function sellerOnly(req, res, next) {
   
 
 
-app.get('/seller/:id/sales-history/yearly', (req, res) => {
+/*app.get('/seller/:id/sales-history/yearly', (req, res) => {
   const { id } = req.params; // Seller ID
 
   const query = `
@@ -2298,7 +2298,7 @@ app.get('/seller/:id/sales-history/yearly', (req, res) => {
     }
     res.json({ yearlySales: results });
   });
-});
+});*/
 
 
 /*app.get('/search-products', (req, res) => {
@@ -2353,7 +2353,7 @@ app.get('/seller/:id/sales-history/yearly', (req, res) => {
   });
 });*/
 
-app.get('/search-products', (req, res) => {
+/*app.get('/search-products', (req, res) => {
   const { query, category, in_stock, sort_by, sort_order } = req.query;
 
   let whereClauses = [];
@@ -2407,13 +2407,13 @@ app.get('/search-products', (req, res) => {
 
     res.status(200).json(results);
   });
-});
+});*/
 
 
 
 
 
-function authenticateToken(req, res, next) {
+/*function authenticateToken(req, res, next) {
   const token = req.headers['authorization']?.split(' ')[1];
   console.log('Token received:', token); // Add log here
 
@@ -2446,6 +2446,6 @@ function sellerOnly(req, res, next) {
     return res.status(403).send({ message: 'Seller access required' });
   }
   next();
-}
+}*/
 
   
