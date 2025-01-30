@@ -351,7 +351,13 @@ app.post('/login', (req, res) => {
       }
 
       // Generate JWT token and send the user object
-      const token = jwt.sign({ id: user.id, email: user.email, role: user.role }, 'your_jwt_secret', { expiresIn: '1h' });
+      //const token = jwt.sign({ id: user.id, email: user.email, role: user.role }, 'your_jwt_secret', { expiresIn: '1h' });
+      const token = jwt.sign(
+      { id: user.id, email: user.email, role: user.role },
+        process.env.JWT_SECRET, 
+      { expiresIn: '1h' }
+      );
+
       res.send({ 
         message: 'Login successful', 
         token, 
