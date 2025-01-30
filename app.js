@@ -926,6 +926,34 @@ app.put('/addresses/default/:id', (req, res) => {
   });
 });
 
+app.get('/user/default-address', (req, res) => {
+  const { user_id } = req.query; // Get user_id from query params
+
+  if (!user_id) {
+    return res.status(400).json({ error: 'User ID is required' });
+  }
+
+  const query = `
+    SELECT district FROM addresses 
+    WHERE user_id = ? AND is_default = TRUE 
+    LIMIT 1
+  `;
+
+  db.query(query, [user_id], (err, results) => {
+    if (err) {
+      console.error('Error fetching default address:', err);
+      return res.status(500).json({ error: 'Failed to fetch address' });
+    }
+
+    if (results.length === 0) {
+      return res.status(404).json({ error: 'No default address found' });
+    }
+
+    res.status(200).json({ district: results[0].district });
+  });
+});
+
+
 
 /*// Add a new review
 app.post('/add-review', (req, res) => {
@@ -1015,7 +1043,7 @@ app.get('/reviews/:id', (req, res) => {
 
 
 
-app.put('/edit-product/:id', (req, res) => {
+/*app.put('/edit-product/:id', (req, res) => {
 
   const productId = req.params.id;
 
@@ -1071,8 +1099,185 @@ app.put('/edit-product/:id', (req, res) => {
 
   });
 
-});
+});*/
+/*app.put('/edit-product/:id', (req, res) => {
+  const productId = req.params.id;
+  const { 
+    product_name, 
+    category, 
+    division, 
+    district, 
+    is_seasonal, 
+    price, 
+    in_stock, 
+    description, 
+    payment_methods, 
+    images,
+    pickup_address 
+  } = req.body;
 
+  console.log('Received update request for product:', productId);
+  console.log('Request body:', req.body);
+
+  // Modified input validation
+  if (!product_name || !category || !division || !district || !description || !pickup_address) {
+    console.log('Validation failed: Missing required fields');
+    return res.status(400).json({ 
+      message: 'Required fields missing',
+      required: ['product_name', 'category', 'division', 'district', 'description', 'pickup_address'],
+      received: req.body 
+    });
+  }
+
+  // Convert price to number if it's a string
+  const numericPrice = typeof price === 'string' ? parseFloat(price) : price;
+
+  // Ensure payment_methods and images are arrays
+  const validPaymentMethods = Array.isArray(payment_methods) ? payment_methods : ['Cash'];
+  const validImages = Array.isArray(images) ? images : ['default.jpg'];
+
+  const query = `
+    UPDATE products
+    SET 
+      product_name = ?,
+      category = ?,
+      division = ?,
+      district = ?,
+      is_seasonal = ?,
+      price = ?,
+      in_stock = ?,
+      description = ?,
+      payment_methods = ?,
+      images = ?,
+      pickup_address = ?
+    WHERE id = ?
+  `;
+
+  const values = [
+    product_name,
+    category,
+    division,
+    district,
+    is_seasonal,
+    numericPrice,
+    in_stock,
+    description,
+    //JSON.stringify(validPaymentMethods),
+    //JSON.stringify(validImages),
+    pickup_address,
+    productId
+  ];
+
+  console.log('Executing query with values:', values);
+
+  db.query(query, values, (err, result) => {
+    if (err) {
+      console.error('Database error:', err);
+      return res.status(500).json({ 
+        message: 'Failed to update product',
+        error: err.message 
+      });
+    }
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: 'Product not found' });
+    }
+
+    console.log('Update successful:', result);
+    res.status(200).json({ 
+      message: 'Product updated successfully',
+      productId: productId
+    });
+  });
+});*/
+app.put('/edit-product/:id', (req, res) => {
+  const productId = req.params.id;
+  const { 
+    product_name, 
+    category, 
+    division, 
+    district, 
+    is_seasonal, 
+    price, 
+    in_stock, 
+    description, 
+    payment_methods, 
+    images,
+    pickup_address 
+  } = req.body;
+
+  console.log('Received update request for product:', productId);
+  console.log('Request body:', req.body);
+
+  // Input validation
+  if (!product_name || !category || !division || !district || !description) {
+    console.log('Validation failed: Missing required fields');
+    return res.status(400).json({ 
+      message: 'Required fields missing'
+    });
+  }
+
+  // Convert price to number if it's a string
+  const numericPrice = typeof price === 'string' ? parseFloat(price) : price;
+
+  // Ensure payment_methods and images are arrays
+  const validPaymentMethods = Array.isArray(payment_methods) ? payment_methods : ['Cash'];
+  const validImages = Array.isArray(images) ? images : ['default.jpg'];
+
+  // MySQL query with proper backticks for column names
+  const query = `
+    UPDATE products SET
+    \`product_name\` = ?,
+    \`category\` = ?,
+    \`division\` = ?,
+    \`district\` = ?,
+    \`is_seasonal\` = ?,
+    \`price\` = ?,
+    \`in_stock\` = ?,
+    \`description\` = ?,
+    \`payment_methods\` = ?,
+    \`images\` = ?,
+    \`pickup_address\` = ?
+    WHERE \`id\` = ?
+  `;
+
+  const values = [
+    product_name,
+    category,
+    division,
+    district,
+    is_seasonal ? 1 : 0,  // Convert boolean to integer
+    numericPrice,
+    in_stock ? 1 : 0,     // Convert boolean to integer
+    description,
+    JSON.stringify(validPaymentMethods),
+    JSON.stringify(validImages),
+    pickup_address || '',  // Provide empty string if pickup_address is undefined
+    productId
+  ];
+
+  console.log('Executing query with values:', values);
+
+  db.query(query, values, (err, result) => {
+    if (err) {
+      console.error('Database error:', err);
+      return res.status(500).json({ 
+        message: 'Failed to update product',
+        error: err.message 
+      });
+    }
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: 'Product not found' });
+    }
+
+    console.log('Update successful:', result);
+    res.status(200).json({ 
+      message: 'Product updated successfully',
+      productId: productId
+    });
+  });
+});
 
 
 app.delete('/delete-product/:id', (req, res) => {
@@ -1437,6 +1642,160 @@ app.get('/notifications/:sellerId', (req, res) => {
   });
 
 
+  // Backend Route for Fetching Products by District with Nearby Districts
+/*const nearestDistrictMap = {
+  // Barishal Division
+  'Barishal': ['Jhalokati', 'Pirojpur', 'Bhola'],
+  'Bhola': ['Barishal', 'Patuakhali', 'Lakshmipur'],
+  'Jhalokati': ['Barishal', 'Pirojpur', 'Barguna'],
+  'Pirojpur': ['Jhalokati', 'Barishal', 'Bagerhat'],
+  'Patuakhali': ['Barguna', 'Bhola', 'Barishal'],
+  'Barguna': ['Patuakhali', 'Jhalokati', 'Pirojpur'],
+
+  // Chattogram Division
+  'Chattogram': ["Cox's Bazar", 'Bandarban', 'Feni'],
+  "Cox's Bazar": ['Chattogram', 'Bandarban', 'Rangamati'],
+  'Bandarban': ['Chattogram', "Cox's Bazar", 'Rangamati'],
+  'Rangamati': ['Bandarban', 'Khagrachari', 'Chattogram'],
+  'Khagrachari': ['Rangamati', 'Chattogram', 'Feni'],
+  'Feni': ['Chattogram', 'Noakhali', 'Khagrachari'],
+  'Noakhali': ['Feni', 'Lakshmipur', 'Bhola'],
+  'Lakshmipur': ['Noakhali', 'Feni', 'Bhola'],
+
+  // Add more districts from other divisions...
+};*/
+const nearestDistrictMap = {
+  // Barishal Division
+  'Barishal': ['Jhalokati', 'Pirojpur', 'Bhola'],
+  'Bhola': ['Barishal', 'Patuakhali', 'Lakshmipur'],
+  'Jhalokati': ['Barishal', 'Pirojpur', 'Barguna'],
+  'Pirojpur': ['Jhalokati', 'Barishal', 'Bagerhat'],
+  'Patuakhali': ['Barguna', 'Bhola', 'Barishal'],
+  'Barguna': ['Patuakhali', 'Jhalokati', 'Pirojpur'],
+
+  // Chattogram Division
+  'Chattogram': ["Cox's Bazar", 'Bandarban', 'Feni'],
+  "Cox's Bazar": ['Chattogram', 'Bandarban', 'Rangamati'],
+  'Bandarban': ['Chattogram', "Cox's Bazar", 'Rangamati'],
+  'Rangamati': ['Bandarban', 'Khagrachari', 'Chattogram'],
+  'Khagrachari': ['Rangamati', 'Chattogram', 'Feni'],
+  'Feni': ['Chattogram', 'Noakhali', 'Khagrachari'],
+  'Noakhali': ['Feni', 'Lakshmipur', 'Bhola'],
+  'Lakshmipur': ['Noakhali', 'Feni', 'Bhola'],
+
+  // Dhaka Division
+  'Dhaka': ['Narayanganj', 'Munshiganj', 'Manikganj'],
+  'Narayanganj': ['Dhaka', 'Munshiganj', 'Narsingdi'],
+  'Munshiganj': ['Narayanganj', 'Dhaka', 'Shariatpur'],
+  'Manikganj': ['Dhaka', 'Tangail', 'Rajbari'],
+  'Tangail': ['Manikganj', 'Jamalpur', 'Gazipur'],
+  'Gazipur': ['Dhaka', 'Tangail', 'Narsingdi'],
+  'Narsingdi': ['Narayanganj', 'Gazipur', 'Brahmanbaria'],
+  'Kishoreganj': ['Narsingdi', 'Mymensingh', 'Brahmanbaria'],
+  'Faridpur': ['Rajbari', 'Gopalganj', 'Shariatpur'],
+  'Rajbari': ['Manikganj', 'Faridpur', 'Gopalganj'],
+  'Gopalganj': ['Faridpur', 'Rajbari', 'Madaripur'],
+  'Madaripur': ['Shariatpur', 'Gopalganj', 'Faridpur'],
+  'Shariatpur': ['Madaripur', 'Munshiganj', 'Faridpur'],
+
+  // Khulna Division
+  'Khulna': ['Bagerhat', 'Satkhira', 'Jessore'],
+  'Bagerhat': ['Khulna', 'Pirojpur', 'Gopalganj'],
+  'Satkhira': ['Khulna', 'Jessore', 'Jashore'],
+  'Jessore': ['Khulna', 'Satkhira', 'Magura'],
+  'Magura': ['Jashore', 'Jhenaidah', 'Kushtia'],
+  'Jhenaidah': ['Magura', 'Jashore', 'Chuadanga'],
+  'Chuadanga': ['Jhenaidah', 'Kushtia', 'Meherpur'],
+  'Meherpur': ['Chuadanga', 'Kushtia', 'Jhenaidah'],
+
+  // Mymensingh Division
+  'Mymensingh': ['Jamalpur', 'Netrokona', 'Kishoreganj'],
+  'Netrokona': ['Mymensingh', 'Sunamganj', 'Jamalpur'],
+  'Jamalpur': ['Tangail', 'Mymensingh', 'Sherpur'],
+  'Sherpur': ['Jamalpur', 'Mymensingh', 'Netrokona'],
+
+  // Rajshahi Division
+  'Rajshahi': ['Naogaon', 'Natore', 'Chapainawabganj'],
+  'Natore': ['Rajshahi', 'Pabna', 'Sirajganj'],
+  'Naogaon': ['Rajshahi', 'Joypurhat', 'Chapainawabganj'],
+  'Chapainawabganj': ['Rajshahi', 'Naogaon', 'Natore'],
+  'Pabna': ['Natore', 'Sirajganj', 'Kushtia'],
+  'Sirajganj': ['Pabna', 'Tangail', 'Natore'],
+  'Joypurhat': ['Naogaon', 'Bogura', 'Gaibandha'],
+  'Bogura': ['Joypurhat', 'Gaibandha', 'Sirajganj'],
+  'Gaibandha': ['Bogura', 'Kurigram', 'Rangpur'],
+
+  // Rangpur Division
+  'Rangpur': ['Gaibandha', 'Kurigram', 'Dinajpur'],
+  'Dinajpur': ['Thakurgaon', 'Rangpur', 'Nilphamari'],
+  'Thakurgaon': ['Panchagarh', 'Dinajpur', 'Nilphamari'],
+  'Panchagarh': ['Thakurgaon', 'Nilphamari', 'Dinajpur'],
+  'Nilphamari': ['Dinajpur', 'Rangpur', 'Lalmonirhat'],
+  'Kurigram': ['Gaibandha', 'Lalmonirhat', 'Rangpur'],
+  'Lalmonirhat': ['Kurigram', 'Nilphamari', 'Rangpur'],
+
+  // Sylhet Division
+  'Sylhet': ['Moulvibazar', 'Habiganj', 'Sunamganj'],
+  'Moulvibazar': ['Sylhet', 'Habiganj', 'Sunamganj'],
+  'Habiganj': ['Moulvibazar', 'Brahmanbaria', 'Sunamganj'],
+  'Sunamganj': ['Sylhet', 'Moulvibazar', 'Netrokona'],
+
+  // Other Districts
+  'Kushtia': ['Pabna', 'Meherpur', 'Chuadanga'],
+  'Chandpur': ['Noakhali', 'Cumilla', 'Feni'],
+  'Cumilla': ['Brahmanbaria', 'Feni', 'Noakhali']
+};
+
+app.get('/products/by-district', (req, res) => {
+  const { userDistrict } = req.query;
+
+  if (!userDistrict) {
+    return res.status(400).json({ error: 'District is required' });
+  }
+
+  // Get the list of nearest districts
+  const nearestDistricts = nearestDistrictMap[userDistrict] || [];
+  const allTargetDistricts = [userDistrict, ...nearestDistricts];
+
+  // Create a query to fetch products from user's district and nearby districts
+  const query = `
+    SELECT id, product_name, category, district, price, images, seller_id
+    FROM products
+    WHERE district IN (?) AND is_active = true
+    ORDER BY 
+      CASE 
+        WHEN district = ? THEN 0 
+        ELSE 1 
+      END, 
+      RAND()
+    LIMIT 12;
+  `;
+
+  db.query(query, [allTargetDistricts, userDistrict], (err, results) => {
+    if (err) {
+      console.error('Error fetching district products:', err);
+      return res.status(500).json({ error: 'Failed to fetch products' });
+    }
+
+    // Process images and parse JSON fields
+    const processedProducts = results.map(product => ({
+      ...product,
+      images: typeof product.images === 'string' 
+        ? (product.images.includes(',') 
+            ? product.images.split(',').map(url => url.trim()) 
+            : [product.images.trim()])
+        : []
+    }));
+
+    res.status(200).json({
+      userDistrict,
+      nearestDistricts,
+      products: processedProducts
+    });
+  });
+});
+
+
 
 // API to Fetch Seller's Orders
 
@@ -1744,6 +2103,179 @@ app.get('/seller/:id/sales-history/monthly', (req, res) => {
     res.json({ monthlySales: results });
   });
 });
+
+
+app.get('/seller/:id/sales-history/yearly', (req, res) => {
+  const { id } = req.params; // Seller ID
+
+  const query = `
+    SELECT 
+      YEAR(sh.sale_date) AS year,
+      SUM(sh.total_price * sh.quantity) AS total_amount
+    FROM sales_history sh
+    WHERE sh.seller_id = ?
+    GROUP BY year
+    ORDER BY year
+  `;
+
+  db.query(query, [id], (err, results) => {
+    if (err) {
+      console.error('Error fetching yearly sales history:', err);
+      return res.status(500).send('Error fetching yearly sales history');
+    }
+    res.json({ yearlySales: results });
+  });
+});
+
+
+/*app.get('/search-products', (req, res) => {
+  const { query, category, in_stock, sort_by, sort_order } = req.query;
+  
+  let whereClauses = [];
+  let queryParams = [];
+
+  // Search by product name (using LIKE for partial matching)
+  if (query) {
+    whereClauses.push('product_name LIKE ?');
+    queryParams.push(`%${query}%`);
+  }
+
+  // Filter by category
+  if (category) {
+    whereClauses.push('category = ?');
+    queryParams.push(category);
+  }
+
+  // Filter by in-stock status
+  if (in_stock !== undefined) {
+    whereClauses.push('in_stock = ?');
+    queryParams.push(in_stock === 'true' ? 1 : 0);
+  }
+
+  // If no filters are applied, use the default where clause
+  const whereClause = whereClauses.length > 0 ? `WHERE ${whereClauses.join(' AND ')}` : '';
+
+  // Sorting options
+  let orderByClause = '';
+  if (sort_by && sort_order) {
+    orderByClause = `ORDER BY ${sort_by} ${sort_order}`;
+  } else {
+    // Default sort by product name
+    orderByClause = 'ORDER BY product_name ASC';
+  }
+
+  // SQL query to fetch products
+  const queryString = `
+    SELECT * FROM products
+    ${whereClause}
+    ${orderByClause}
+  `;
+
+  db.query(queryString, queryParams, (err, results) => {
+    if (err) {
+      console.error('Error fetching products:', err);
+      return res.status(500).json({ message: 'Failed to fetch products' });
+    }
+    res.status(200).json(results);
+  });
+});*/
+
+app.get('/search-products', (req, res) => {
+  const { query, category, in_stock, sort_by, sort_order } = req.query;
+
+  let whereClauses = [];
+  let queryParams = [];
+
+  // Search by product name (partial matching)
+  if (query) {
+    whereClauses.push('LOWER(product_name) LIKE ?');
+    queryParams.push(`%${query.toLowerCase()}%`);
+  }
+
+  // Filter by category
+  if (category) {
+    whereClauses.push('category = ?');
+    queryParams.push(category);
+  }
+
+  // Filter by in-stock status
+  if (in_stock !== undefined) {
+    whereClauses.push('in_stock = ?');
+    queryParams.push(in_stock === 'true' ? 1 : 0);
+  }
+
+  const whereClause = whereClauses.length > 0 ? `WHERE ${whereClauses.join(' AND ')}` : '';
+
+  // Sorting
+  let orderByClause = '';zzwz
+  if (sort_by && sort_order) {
+    const validSortFields = ['product_name', 'price', 'created_at'];
+    const validSortOrders = ['ASC', 'DESC'];
+
+    if (validSortFields.includes(sort_by) && validSortOrders.includes(sort_order.toUpperCase())) {
+      orderByClause = `ORDER BY ${sort_by} ${sort_order.toUpperCase()}`;
+    }
+  } else {
+    orderByClause = 'ORDER BY product_name ASC'; // Default sort
+  }
+
+  const queryString = `
+    SELECT id, product_name, category, price, in_stock
+    FROM products
+    ${whereClause}
+    ${orderByClause}
+  `;
+
+  db.query(queryString, queryParams, (err, results) => {
+    if (err) {
+      console.error('Error fetching products:', err);
+      return res.status(500).json({ message: 'Failed to fetch products' });
+    }
+
+    res.status(200).json(results);
+  });
+});
+
+
+
+
+
+function authenticateToken(req, res, next) {
+  const token = req.headers['authorization']?.split(' ')[1];
+  console.log('Token received:', token); // Add log here
+
+  if (!token) return res.status(403).send({ message: 'Token required' });
+  
+  jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+    if (err) {
+      console.error('Token verification failed:', err); // Log any verification errors
+      return res.status(403).send({ message: 'Invalid token' });
+    }
+    req.user = user; // Attach decoded user object, including role
+    console.log('Decoded user:', user); // Log the decoded user
+    next();
+  });
+}
+
+const cors = require('cors');
+app.use(cors());
+
+// Middleware to restrict access to admin users only
+function adminOnly(req, res, next) {
+  if (!req.user || req.user.role !== 'admin') {
+    return res.status(403).send({ message: 'Admin access required' });
+  }
+  next();
+}
+
+function sellerOnly(req, res, next) {
+  if (!req.user || req.user.role !== 'seller') {
+    return res.status(403).send({ message: 'Seller access required' });
+  }
+  next();
+}
+
+  
 
 
 app.get('/seller/:id/sales-history/yearly', (req, res) => {
